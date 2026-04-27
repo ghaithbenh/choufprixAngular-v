@@ -21,8 +21,15 @@
     "@angular/platform-server": "^17.3.0",
     "@angular/router": "^17.3.0",
     "@angular/ssr": "^17.3.17",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@tanstack/angular-query-experimental": "^5.100.5",
+    "axios": "^1.15.2",
     "express": "^4.18.2",
+    "lucide-angular": "^1.0.0",
+    "recharts": "^3.8.1",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.3",
+    "three": "^0.184.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
   },
@@ -33,12 +40,16 @@
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^18.18.0",
+    "@types/three": "^0.184.0",
+    "autoprefixer": "^10.5.0",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "postcss": "^8.5.12",
+    "tailwindcss": "^3.4.19",
     "typescript": "~5.4.2"
   }
 }

@@ -1,0 +1,39 @@
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-skeleton-card',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="card overflow-hidden">
+      <!-- Image skeleton -->
+      <div class="h-48 bg-slate-200 shimmer-wrapper relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full"
+             style="animation: shimmer 1.5s infinite;"></div>
+      </div>
+      <!-- Content skeleton -->
+      <div class="p-4 space-y-3">
+        <div class="h-4 bg-slate-200 rounded-lg w-3/4 shimmer-wrapper overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full"
+               style="animation: shimmer 1.5s infinite 0.1s;"></div>
+        </div>
+        <div class="h-4 bg-slate-200 rounded-lg w-1/2 shimmer-wrapper overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full"
+               style="animation: shimmer 1.5s infinite 0.2s;"></div>
+        </div>
+        <div class="h-6 bg-slate-200 rounded-lg w-1/3 mt-4 shimmer-wrapper overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full"
+               style="animation: shimmer 1.5s infinite 0.3s;"></div>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class SkeletonCardComponent {
+  @Input() count: number = 1;
+
+  get items(): number[] {
+    return Array.from({ length: this.count }, (_, i) => i);
+  }
+}
