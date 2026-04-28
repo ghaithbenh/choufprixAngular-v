@@ -67,4 +67,8 @@ export class ProductService {
   getDashboardStats(token: string): Observable<any> {
     return this.api.get<any>('/products/stats', undefined, token);
   }
+
+  deleteStore(storeName: string, token: string): Observable<{ deletedProducts: number }> {
+    return this.api.delete<{ deletedProducts: number }>(`/products/stores/${encodeURIComponent(storeName)}`, token);
+  }
 }
