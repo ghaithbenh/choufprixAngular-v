@@ -1,5 +1,5 @@
 import { Component, computed, HostListener, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { ChatbotComponent } from '../chatbot/chatbot.component';
@@ -8,163 +8,7 @@ import { ChatbotComponent } from '../chatbot/chatbot.component';
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ChatbotComponent],
-  template: `
-    <div class="min-h-screen flex flex-col bg-slate-50">
-      <!-- Sticky Header -->
-      <header class="sticky top-0 z-50 glass border-b border-gray-200/60 transition-all duration-300"
-              [class.shadow-md]="isScrolled()">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex items-center justify-between h-16">
-            <!-- Logo -->
-            <a routerLink="/" class="flex items-center gap-2 group">
-              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200 group-hover:shadow-blue-300 transition-all duration-300">
-                <span class="text-white font-bold text-sm">CP</span>
-              </div>
-              <span class="font-outfit font-bold text-xl text-slate-900">
-                Chouf<span class="gradient-text">Prix</span>
-              </span>
-            </a>
-
-            <!-- Desktop Navigation -->
-            <nav class="hidden md:flex items-center gap-1">
-              <a routerLink="/" routerLinkActive="text-blue-600 bg-blue-50" [routerLinkActiveOptions]="{exact:true}"
-                 class="nav-link text-sm">Accueil</a>
-              <a routerLink="/category/tech" class="nav-link text-sm">Tech</a>
-              <a routerLink="/category/home" class="nav-link text-sm">Maison</a>
-              <a routerLink="/category/fashion" class="nav-link text-sm">Mode</a>
-              <a routerLink="/marketplace" class="nav-link text-sm">Marketplace</a>
-              @if (isAdmin() || isSubAdmin()) {
-                <a routerLink="/dashboard" routerLinkActive="text-blue-600 bg-blue-50"
-                   class="nav-link text-sm">Dashboard</a>
-              }
-              @if (isAdmin()) {
-                <a routerLink="/admin/users" routerLinkActive="text-blue-600 bg-blue-50"
-                   class="nav-link text-sm">Utilisateurs</a>
-              }
-              @if (isSignedIn()) {
-                <a routerLink="/tracked" routerLinkActive="text-blue-600 bg-blue-50"
-                   class="nav-link text-sm">♥ Suivis</a>
-                <a routerLink="/my-products" routerLinkActive="text-blue-600 bg-blue-50"
-                   class="nav-link text-sm">Mes Annonces</a>
-              }
-            </nav>
-
-            <!-- Auth Actions -->
-            <div class="flex items-center gap-3">
-              @if (isSignedIn()) {
-                <a routerLink="/add-product"
-                   class="hidden sm:flex btn-primary text-sm !py-2 !px-4">
-                  + Vendre
-                </a>
-                <div class="relative group cursor-pointer">
-                  <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-semibold">
-                    {{ userInitials() }}
-                  </div>
-                  <!-- Dropdown -->
-                  <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2">
-                    <div class="px-4 py-2 border-b border-gray-100">
-                      <p class="text-sm font-semibold text-slate-800">{{ user()?.firstName }}</p>
-                      <p class="text-xs text-slate-500">{{ user()?.email }}</p>
-                    </div>
-                    <a routerLink="/my-products" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                      📦 Mes annonces
-                    </a>
-                    <a routerLink="/tracked" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                      ♥ Mes suivis
-                    </a>
-                    <button (click)="signOut()" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                      🚪 Déconnexion
-                    </button>
-                  </div>
-                </div>
-              } @else {
-                <button (click)="openSignIn()" class="btn-secondary text-sm !py-2 !px-4">
-                  Connexion
-                </button>
-                <a routerLink="/add-product"
-                   class="hidden sm:flex btn-primary text-sm !py-2 !px-4">
-                  + Vendre
-                </a>
-              }
-
-              <!-- Mobile menu toggle -->
-              <button class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-gray-100 transition-colors"
-                      (click)="toggleMobileMenu()">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  @if (mobileMenuOpen()) {
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                  } @else {
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                  }
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mobile Menu -->
-        @if (mobileMenuOpen()) {
-          <div class="md:hidden border-t border-gray-100 bg-white py-4 px-4 space-y-1">
-            <a routerLink="/" class="block nav-link text-sm" (click)="closeMobileMenu()">Accueil</a>
-            <a routerLink="/category/tech" class="block nav-link text-sm" (click)="closeMobileMenu()">Tech</a>
-            <a routerLink="/category/home" class="block nav-link text-sm" (click)="closeMobileMenu()">Maison</a>
-            <a routerLink="/marketplace" class="block nav-link text-sm" (click)="closeMobileMenu()">Marketplace</a>
-            @if (isSignedIn()) {
-              <a routerLink="/tracked" class="block nav-link text-sm" (click)="closeMobileMenu()">♥ Suivis</a>
-              <a routerLink="/my-products" class="block nav-link text-sm" (click)="closeMobileMenu()">Mes Annonces</a>
-              <a routerLink="/add-product" class="block btn-primary text-sm text-center mt-2" (click)="closeMobileMenu()">+ Vendre</a>
-            }
-          </div>
-        }
-      </header>
-
-      <!-- Main Content -->
-      <main class="flex-1">
-        <router-outlet></router-outlet>
-      </main>
-
-      <!-- Footer -->
-      <footer class="bg-slate-900 text-slate-300 py-12 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div class="md:col-span-2">
-              <div class="flex items-center gap-2 mb-4">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                  <span class="text-white font-bold text-sm">CP</span>
-                </div>
-                <span class="font-outfit font-bold text-xl text-white">ChoufPrix</span>
-              </div>
-              <p class="text-slate-400 text-sm leading-relaxed">
-                La plateforme de comparaison de prix #1 en Tunisie. Comparez, suivez et économisez sur tous vos achats.
-              </p>
-            </div>
-            <div>
-              <h4 class="font-semibold text-white mb-4">Navigation</h4>
-              <ul class="space-y-2 text-sm">
-                <li><a routerLink="/" class="hover:text-white transition-colors">Accueil</a></li>
-                <li><a routerLink="/marketplace" class="hover:text-white transition-colors">Marketplace</a></li>
-                <li><a routerLink="/category/tech" class="hover:text-white transition-colors">Tech</a></li>
-                <li><a routerLink="/category/home" class="hover:text-white transition-colors">Maison</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-semibold text-white mb-4">Contact</h4>
-              <ul class="space-y-2 text-sm">
-                <li class="text-slate-400">contact&#64;choufprix.tn</li>
-                <li class="text-slate-400">Tunis, Tunisie</li>
-              </ul>
-            </div>
-          </div>
-          <div class="border-t border-slate-800 mt-8 pt-8 text-center text-sm text-slate-500">
-            © 2024 ChoufPrix. Tous droits réservés.
-          </div>
-        </div>
-      </footer>
-
-      <!-- Floating Chatbot -->
-      <app-chatbot></app-chatbot>
-    </div>
-  `
+  templateUrl: './layout.component.html'
 })
 export class LayoutComponent {
   isScrolled = signal(false);
@@ -181,7 +25,7 @@ export class LayoutComponent {
     return `${u.firstName?.charAt(0) || ''}${u.lastName?.charAt(0) || ''}`.toUpperCase() || u.email.charAt(0).toUpperCase();
   });
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
@@ -199,8 +43,7 @@ export class LayoutComponent {
   }
 
   openSignIn(): void {
-    // Integrate Clerk sign-in modal or navigate to sign-in page
-    alert('Fonctionnalité de connexion - Intégrez Clerk ici');
+    this.router.navigate(['/login']);
   }
 
   signOut(): void {

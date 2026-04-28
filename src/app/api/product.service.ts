@@ -52,15 +52,19 @@ export class ProductService {
     return this.api.post<Product>('/products', data, token);
   }
 
+  updateProduct(id: string, data: Partial<Product>, token: string): Observable<Product> {
+    return this.api.patch<Product>(`/products/${id}`, data, token);
+  }
+
   getUserProducts(token: string): Observable<Product[]> {
-    return this.api.get<Product[]>('/products/user/all');
+    return this.api.get<Product[]>('/products/user/all', undefined, token);
   }
 
   deleteProduct(id: string, token: string): Observable<void> {
     return this.api.delete<void>(`/products/${id}`, token);
   }
 
-  getDashboardStats(): Observable<any> {
-    return this.api.get<any>('/dashboard/stats');
+  getDashboardStats(token: string): Observable<any> {
+    return this.api.get<any>('/products/stats', undefined, token);
   }
 }

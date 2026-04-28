@@ -2,5 +2,5 @@ export const environment = {
   production: false,
   apiUrl: 'http://localhost:3001/api',
   socketUrl: 'http://localhost:3001',
-  clerkPublishableKey: 'pk_test_your_key_here',
+
 };

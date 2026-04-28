@@ -8,18 +8,18 @@ export class TrackedItemsService {
   constructor(private api: ApiClientService) {}
 
   getTrackedItems(token: string): Observable<TrackedItem[]> {
-    return this.api.get<TrackedItem[]>('/tracked');
+    return this.api.get<TrackedItem[]>('/tracked-items', undefined, token);
   }
 
   getTrackedProductIds(token: string): Observable<string[]> {
-    return this.api.get<string[]>('/tracked/ids');
+    return this.api.get<string[]>('/tracked-items/ids', undefined, token);
   }
 
   trackProduct(productId: string, token: string): Observable<any> {
-    return this.api.post<any>('/tracked', { productId }, token);
+    return this.api.post<any>('/tracked-items', { productId }, token);
   }
 
   untrackProduct(productId: string, token: string): Observable<any> {
-    return this.api.delete<any>(`/tracked/${productId}`, token);
+    return this.api.delete<any>(`/tracked-items/${productId}`, token);
   }
 }

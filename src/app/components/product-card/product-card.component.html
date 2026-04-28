@@ -1,0 +1,72 @@
+<div class="card card-hover cursor-pointer group relative overflow-hidden"
+     [class]="getGlowClass()"
+     (click)="onClick.emit(product)">
+
+  <!-- Store badge -->
+  <div class="absolute top-3 left-3 z-10">
+    <span class="badge text-xs" [class]="getStoreBadge()">
+      {{ getStoreLabel() }}
+    </span>
+  </div>
+
+  <!-- Tracking heart -->
+  <button class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
+          [class.text-red-500]="isTracked"
+          [class.text-slate-400]="!isTracked"
+          (click)="toggleTrack($event)">
+    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </button>
+
+  <!-- Product Image -->
+  <div class="relative h-48 bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden rounded-t-2xl">
+    @if (product.image) {
+      <img [src]="product.image" [alt]="product.name"
+           class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+           (error)="onImgError($event)">
+    } @else {
+      <div class="w-full h-full flex items-center justify-center text-5xl opacity-30">
+        {{ getCategoryEmoji() }}
+      </div>
+    }
+
+    <!-- Shimmer overlay on hover -->
+    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+  </div>
+
+  <!-- Card Content -->
+  <div class="p-4">
+    <!-- Product name -->
+    <h3 class="text-sm font-semibold text-slate-800 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+      {{ truncateName(product.name) }}
+    </h3>
+
+    <!-- Category tag -->
+    @if (product.subcategory) {
+      <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+        {{ product.subcategory }}
+      </span>
+    }
+
+    <!-- Price -->
+    <div class="mt-3 flex items-center justify-between">
+      <div>
+        <p class="text-xl font-bold text-slate-900 font-outfit">
+          {{ formatPrice(product.price) }}
+        </p>
+      </div>
+      <!-- External link -->
+      @if (product.url && product.source !== 'user') {
+        <a [href]="product.url" target="_blank" rel="noopener"
+           class="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all duration-200"
+           (click)="$event.stopPropagation()">
+          Voir
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+        </a>
+      }
+    </div>
+  </div>
+</div>

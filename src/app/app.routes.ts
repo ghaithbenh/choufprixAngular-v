@@ -12,6 +12,11 @@ export const routes: Routes = [
           import('./pages/home/home.component').then(m => m.HomeComponent),
       },
       {
+        path: 'login',
+        loadComponent: () =>
+          import('./pages/login/login.component').then(m => m.LoginComponent),
+      },
+      {
         path: 'category/:slug',
         loadComponent: () =>
           import('./pages/category/category.component').then(m => m.CategoryPageComponent),
@@ -38,6 +43,11 @@ export const routes: Routes = [
       },
       {
         path: 'add-product',
+        loadComponent: () =>
+          import('./pages/add-product/add-product.component').then(m => m.AddProductComponent),
+      },
+      {
+        path: 'edit-product/:id',
         loadComponent: () =>
           import('./pages/add-product/add-product.component').then(m => m.AddProductComponent),
       },

@@ -1,0 +1,36 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <!-- Header -->
+  <div class="mb-10">
+    <h1 class="font-outfit text-4xl font-black text-slate-900">♥ Mes produits suivis</h1>
+    <p class="text-slate-500 mt-2">Suivez l'évolution des prix de vos produits préférés</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      @for (i of [1,2,3,4,5,6,7,8]; track i) {
+        <app-skeleton-card></app-skeleton-card>
+      }
+    </div>
+  } @else if (items().length === 0) {
+    <div class="text-center py-24">
+      <div class="text-8xl mb-6">💔</div>
+      <h3 class="font-outfit text-2xl font-bold text-slate-700 mb-3">Aucun produit suivi</h3>
+      <p class="text-slate-500 mb-8">Ajoutez des produits à vos favoris pour les suivre ici</p>
+      <button class="btn-primary" (click)="navigateHome()">
+        Explorer les produits
+      </button>
+    </div>
+  } @else {
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      @for (item of items(); track item._id) {
+        <app-product-card
+          [product]="item.productId"
+          [forceTracked]="true"
+          (onClick)="navigateToProduct($event)"
+          (onTrackChange)="handleTrackChange($event, item._id)">
+        </app-product-card>
+      }
+    </div>
+  }
+</div>

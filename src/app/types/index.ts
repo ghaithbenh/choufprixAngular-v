@@ -25,7 +25,7 @@ export interface PriceHistory {
 // Tracked item (saved product)
 export interface TrackedItem {
   _id: string;
-  product: Product;
+  productId: Product;
   clerkUserId: string;
   createdAt?: string;
 }
@@ -132,6 +132,7 @@ export interface ProductQueryParams {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
+  source?: string;
   page?: number;
   limit?: number;
 }

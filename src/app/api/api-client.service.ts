@@ -9,7 +9,7 @@ export class ApiClientService {
 
   constructor(private http: HttpClient) {}
 
-  get<T>(path: string, params?: Record<string, any>): Observable<T> {
+  get<T>(path: string, params?: Record<string, any>, token?: string): Observable<T> {
     let httpParams = new HttpParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -18,7 +18,9 @@ export class ApiClientService {
         }
       });
     }
-    return this.http.get<T>(`${this.baseUrl}${path}`, { params: httpParams });
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return this.http.get<T>(`${this.baseUrl}${path}`, { params: httpParams, headers });
   }
 
   post<T>(path: string, body: any, token?: string): Observable<T> {

@@ -8,11 +8,7 @@ import * as THREE from 'three';
   selector: 'app-hero-scene',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="relative w-full h-full">
-      <canvas #canvas id="hero-canvas" class="w-full h-full opacity-90"></canvas>
-    </div>
-  `
+  templateUrl: './hero-scene.component.html'
 })
 export class HeroSceneComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
