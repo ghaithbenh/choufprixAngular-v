@@ -27,6 +27,7 @@ export class ChatbotComponent implements OnInit {
   messages = signal<ChatMessage[]>([INITIAL_MESSAGE]);
   isLoading = signal(false);
   isListening = signal(false);
+  isDetectingLocation = signal(false);
   inputText = '';
   city = '';
   cities = TUNISIAN_CITIES;
@@ -36,6 +37,9 @@ export class ChatbotComponent implements OnInit {
   constructor(private api: ApiClientService, private router: Router) {}
 
   ngOnInit(): void {
+    // Auto-detect user location
+    this.detectLocation();
+
     // Initialize speech recognition if available
     if (typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -52,6 +56,28 @@ export class ChatbotComponent implements OnInit {
         this.recognition.onend = () => this.isListening.set(false);
       }
     }
+  }
+
+  detectLocation(): void {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    this.isDetectingLocation.set(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+          .then(r => r.json())
+          .then((data: any) => {
+            const address = data.address;
+            // Try city, town, county, state in order
+            const detected = address.city || address.town || address.county || address.state || '';
+            if (detected) this.city = detected;
+            this.isDetectingLocation.set(false);
+          })
+          .catch(() => this.isDetectingLocation.set(false));
+      },
+      () => this.isDetectingLocation.set(false),
+      { timeout: 5000 }
+    );
   }
 
   toggleOpen(): void {
@@ -125,9 +151,13 @@ export class ChatbotComponent implements OnInit {
     }, 100);
   }
 
-  navigateToProduct(id: string): void {
-    this.router.navigate(['/product', id]);
-    this.isOpen.set(false);
+  navigateToProduct(product: any): void {
+    if (product?._id) {
+      this.router.navigate(['/product', product._id]);
+      this.isOpen.set(false);
+    } else if (product?.url) {
+      window.open(product.url, '_blank');
+    }
   }
 
   formatPrice(price: number): string {

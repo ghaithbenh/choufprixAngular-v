@@ -3,11 +3,17 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+//centralized HTTP client handle all API calls with JWT authentication
+//connects  frontend to  backend (environment.apiUrl)
+//sends HTTP requests (GET, POST, DELETE, PATCH)
+//optionally attaches a JWT token for authentication
+//formats query parameters cleanly
+
 @Injectable({ providedIn: 'root' })
 export class ApiClientService {
   private baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   get<T>(path: string, params?: Record<string, any>, token?: string): Observable<T> {
     let httpParams = new HttpParams();
