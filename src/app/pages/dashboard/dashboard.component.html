@@ -20,44 +20,134 @@
       }
     </div>
   } @else {
-    <!-- Stats cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      <div class="card p-6 border-l-4 border-blue-500">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">📦</div>
-          <span class="badge bg-blue-100 text-blue-700 text-xs">Total</span>
+    <!-- Admin: Stores management integrated with stats -->
+    @if (auth.isAdmin()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+        <div class="card p-6 border-l-4 border-blue-500">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">📦</div>
+            <span class="badge bg-blue-100 text-blue-700 text-xs">Total</span>
+          </div>
+          <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.totalProducts?.toLocaleString() || '—' }}</p>
+          <p class="text-slate-500 text-sm mt-1">Produits</p>
         </div>
-        <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.totalProducts?.toLocaleString() || '—' }}</p>
-        <p class="text-slate-500 text-sm mt-1">Produits</p>
-      </div>
 
-      <div class="card p-6 border-l-4 border-emerald-500">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl">🏪</div>
-          <span class="badge bg-emerald-100 text-emerald-700 text-xs">Actifs</span>
+        <div class="card p-6 border-l-4 border-emerald-500">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl">🏪</div>
+            <span class="badge bg-emerald-100 text-emerald-700 text-xs">Actifs</span>
+          </div>
+          <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.totalStores || '—' }}</p>
+          <p class="text-slate-500 text-sm mt-1">Marchands</p>
         </div>
-        <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.totalStores || '—' }}</p>
-        <p class="text-slate-500 text-sm mt-1">Marchands</p>
-      </div>
 
-      <div class="card p-6 border-l-4 border-orange-500">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl">⚡</div>
-          <span class="badge bg-orange-100 text-orange-700 text-xs">Aujourd'hui</span>
+        <div class="card p-6 border-l-4 border-orange-500">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl">⚡</div>
+            <span class="badge bg-orange-100 text-orange-700 text-xs">Aujourd'hui</span>
+          </div>
+          <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.addedToday || 0 }}</p>
+          <p class="text-slate-500 text-sm mt-1">Ajoutés aujourd'hui</p>
         </div>
-        <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.addedToday || 0 }}</p>
-        <p class="text-slate-500 text-sm mt-1">Ajoutés aujourd'hui</p>
-      </div>
 
-      <div class="card p-6 border-l-4 border-purple-500">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">🕐</div>
-          <span class="badge bg-purple-100 text-purple-700 text-xs">Dernier</span>
+        <!-- Store delete card - for admins -->
+        <div class="card p-4 border-l-4 border-red-500 lg:col-span-2">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-xl">🗑️</div>
+              <span class="badge bg-red-100 text-red-700 text-xs">Admin</span>
+            </div>
+            <span class="text-xs text-slate-400">{{ stores().length }} magasins</span>
+          </div>
+          <p class="text-sm font-semibold text-slate-800 mb-3">Supprimer un magasin</p>
+          
+          @if (isLoadingStores()) {
+            <div class="space-y-2">
+              @for (i of [1,2,3]; track i) {
+                <div class="h-12 bg-slate-100 rounded-lg animate-pulse"></div>
+              }
+            </div>
+          } @else {
+            <div class="space-y-2 max-h-40 overflow-y-auto">
+              @for (store of stores(); track store.name) {
+                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 hover:bg-red-50 transition-colors group">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <p class="text-xs font-semibold text-slate-800 truncate" [title]="store.name">{{ store.name }}</p>
+                      @if (store.status) {
+                        <span class="text-[10px] px-1.5 py-0.5 rounded-full"
+                              [class.bg-emerald-100]="store.status === 'success'"
+                              [class.text-emerald-700]="store.status === 'success'"
+                              [class.bg-red-100]="store.status !== 'success'"
+                              [class.text-red-700]="store.status !== 'success'">
+                          {{ store.status }}
+                        </span>
+                      }
+                    </div>
+                    <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                      <span>{{ store.productCount }} prod</span>
+                      @if (store.lastScrapeTime) {
+                        <span>· {{ formatScraperTime(store.lastScrapeTime) }}</span>
+                      }
+                    </div>
+                  </div>
+                  <button 
+                    class="p-1.5 text-slate-300 hover:text-red-600 hover:bg-white rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                    title="Supprimer"
+                    [disabled]="deletingStore() === store.name"
+                    (click)="deleteStore(store.name)">
+                    @if (deletingStore() === store.name) {
+                      <span class="animate-spin text-xs">⏳</span>
+                    } @else {
+                      <span class="text-xs">✕</span>
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          }
         </div>
-        <p class="text-lg font-bold text-slate-900">{{ formatLastScrape() }}</p>
-        <p class="text-slate-500 text-sm mt-1">Dernier scraping</p>
       </div>
-    </div>
+    } @else {
+      <!-- Non-admin: regular stats -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="card p-6 border-l-4 border-blue-500">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">📦</div>
+            <span class="badge bg-blue-100 text-blue-700 text-xs">Total</span>
+          </div>
+          <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.totalProducts?.toLocaleString() || '—' }}</p>
+          <p class="text-slate-500 text-sm mt-1">Produits</p>
+        </div>
+
+        <div class="card p-6 border-l-4 border-emerald-500">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl">🏪</div>
+            <span class="badge bg-emerald-100 text-emerald-700 text-xs">Actifs</span>
+          </div>
+          <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.totalStores || '—' }}</p>
+          <p class="text-slate-500 text-sm mt-1">Marchands</p>
+        </div>
+
+        <div class="card p-6 border-l-4 border-orange-500">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl">⚡</div>
+            <span class="badge bg-orange-100 text-orange-700 text-xs">Aujourd'hui</span>
+          </div>
+          <p class="text-3xl font-black text-slate-900 font-outfit">{{ stats()?.addedToday || 0 }}</p>
+          <p class="text-slate-500 text-sm mt-1">Ajoutés aujourd'hui</p>
+        </div>
+
+        <div class="card p-6 border-l-4 border-purple-500">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">🕐</div>
+            <span class="badge bg-purple-100 text-purple-700 text-xs">Dernier</span>
+          </div>
+          <p class="text-lg font-bold text-slate-900">{{ formatLastScrape() }}</p>
+          <p class="text-slate-500 text-sm mt-1">Dernier scraping</p>
+        </div>
+      </div>
+    }
 
     <!-- Charts row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
