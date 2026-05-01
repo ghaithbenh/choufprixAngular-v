@@ -32,8 +32,8 @@ export class ProductService {
     return this.api.get<PriceHistory[]>(`/price-history/${productId}`);
   }
 
-  getStores(): Observable<string[]> {
-    return this.api.get<string[]>('/products/stores');
+  getStores(token?: string): Observable<string[]> {
+    return this.api.get<string[]>('/products/stores', undefined, token);
   }
 
   getTaxonomy(): Observable<Taxonomy> {

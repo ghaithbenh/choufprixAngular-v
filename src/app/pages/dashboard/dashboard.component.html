@@ -60,13 +60,9 @@
             <span class="text-xs text-slate-400">{{ stores().length }} magasins</span>
           </div>
           <p class="text-sm font-semibold text-slate-800 mb-3">Supprimer un magasin</p>
-          
-          @if (isLoadingStores()) {
-            <div class="space-y-2">
-              @for (i of [1,2,3]; track i) {
-                <div class="h-12 bg-slate-100 rounded-lg animate-pulse"></div>
-              }
-            </div>
+
+          @if (stores().length === 0) {
+            <p class="text-xs text-slate-400 text-center py-4">Aucun magasin disponible</p>
           } @else {
             <div class="space-y-2 max-h-40 overflow-y-auto">
               @for (store of stores(); track store.name) {
@@ -91,9 +87,9 @@
                       }
                     </div>
                   </div>
-                  <button 
-                    class="p-1.5 text-slate-300 hover:text-red-600 hover:bg-white rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                    title="Supprimer"
+                  <button
+                    class="p-1.5 text-slate-300 hover:text-red-600 hover:bg-white rounded-lg transition-all"
+                    title="Supprimer tous les produits de ce magasin"
                     [disabled]="deletingStore() === store.name"
                     (click)="deleteStore(store.name)">
                     @if (deletingStore() === store.name) {

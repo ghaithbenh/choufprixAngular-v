@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ProductService } from '../../api/product.service';
@@ -8,14 +8,6 @@ import { formatPrice } from '../../lib/utils';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 
-interface StoreInfo {
-  name: string;
-  productCount: number;
-  lastScrapeTime?: number;
-  status?: string;
-  productCountScraper?: number;
-}
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -24,11 +16,24 @@ interface StoreInfo {
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   stats = signal<Stats | null>(null);
-  stores = signal<StoreInfo[]>([]);
   isLoading = signal(true);
-  isLoadingStores = signal(false);
   deletingStore = signal<string | null>(null);
   private socket: Socket | null = null;
+
+  // Derive stores directly from stats.byStore (no extra API call needed)
+  stores = computed(() => {
+    const s = this.stats();
+    if (!s?.byStore) return [];
+    const scraperMap = new Map<string, any>();
+    s.scraperStatus?.forEach((sc: any) => scraperMap.set(sc.store, sc));
+    return s.byStore.map(store => ({
+      name: store.name,
+      productCount: store.value,
+      status: scraperMap.get(store.name)?.status,
+      lastScrapeTime: scraperMap.get(store.name)?.lastScrapeTime,
+      productCountScraper: scraperMap.get(store.name)?.productCount
+    }));
+  });
 
   constructor(
     public auth: AuthService,
@@ -37,13 +42,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Role guard
     if (!this.auth.isAdmin() && !this.auth.isSubAdmin()) {
       this.router.navigate(['/']);
       return;
     }
 
-    // Load initial stats
     this.auth.getToken().then(token => {
       if (!token) return;
       this.productService.getDashboardStats(token).subscribe({
@@ -55,19 +58,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
     });
 
-    // Load stores if admin
-    if (this.auth.isAdmin()) {
-      this.loadStores();
-    }
-
-    // WebSocket for real-time updates
     try {
       this.socket = io(environment.socketUrl);
       this.socket.on('stats_updated', (newStats: Stats) => {
         this.stats.set(newStats);
-        if (this.auth.isAdmin()) {
-          this.loadStores();
-        }
       });
     } catch (e) {
       console.warn('WebSocket connection failed:', e);
@@ -103,49 +97,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return formatPrice(price);
   }
 
-  private async loadStores(): Promise<void> {
-    this.isLoadingStores.set(true);
-    this.productService.getStores().subscribe({
-      next: async (storesList) => {
-        const scraperStatusMap = new Map<string, any>();
-        const currentStats = this.stats();
-        if (currentStats?.scraperStatus) {
-          currentStats.scraperStatus.forEach((s: any) => {
-            scraperStatusMap.set(s.store, s);
-          });
-        }
-
-        const storesWithCounts: StoreInfo[] = [];
-        
-        for (const storeName of storesList) {
-          try {
-            const products = await new Promise<any>((resolve) => {
-              this.productService.getProducts({ source: storeName, limit: 1 }).subscribe({
-                next: (res) => resolve(res),
-                error: () => resolve({ total: 0 })
-              });
-            });
-            
-            const scraperInfo = scraperStatusMap.get(storeName) || {};
-            storesWithCounts.push({
-              name: storeName,
-              productCount: products.total || 0,
-              lastScrapeTime: scraperInfo.lastScrapeTime,
-              status: scraperInfo.status,
-              productCountScraper: scraperInfo.productCount
-            });
-          } catch {
-            storesWithCounts.push({ name: storeName, productCount: 0 });
-          }
-        }
-        
-        this.stores.set(storesWithCounts);
-        this.isLoadingStores.set(false);
-      },
-      error: () => this.isLoadingStores.set(false)
-    });
-  }
-
   async deleteStore(storeName: string): Promise<void> {
     if (!confirm(`Voulez-vous vraiment supprimer le magasin "${storeName}" et tous ses produits ? Cette action est irréversible.`)) {
       return;
@@ -153,12 +104,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.deletingStore.set(storeName);
     const token = await this.auth.getToken();
-    if (!token) return;
+    if (!token) { this.deletingStore.set(null); return; }
 
     this.productService.deleteStore(storeName, token).subscribe({
-      next: () => {
-        this.stores.update(stores => stores.filter(s => s.name !== storeName));
+      next: (result: any) => {
+        // Refresh stats so stores list updates
+        this.auth.getToken().then(t => {
+          if (t) {
+            this.productService.getDashboardStats(t).subscribe({
+              next: (data) => this.stats.set(data)
+            });
+          }
+        });
         this.deletingStore.set(null);
+        alert(`Supprimé : ${result.deletedProducts} produits, ${result.deletedPriceHistory} historiques de prix`);
       },
       error: (err) => {
         alert(err?.error?.message || 'Erreur lors de la suppression');
